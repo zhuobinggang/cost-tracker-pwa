@@ -1,5 +1,4 @@
 <html>
-  
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,65 +11,137 @@
   </head>
 
   <body>
-    <ons-page>
-      <canvas id="chart--pie__day" width="400" height="400"></canvas>
-      <canvas id="chart--line__week" width="300" height="300"></canvas>
-    </ons-page>
+
+    <ons-splitter>
+      <ons-splitter-side id="menu" side="left" width="220px" collapse swipeable>
+        <ons-page>
+          <ons-list>
+            <ons-list-item onclick="G.index.fn.load('daily-analysis.html')" tappable>
+              首页
+            </ons-list-item>
+            <ons-list-item onclick="G.index.fn.load('weekly-analysis.html')" tappable>
+              周支出折线图
+            </ons-list-item>
+          </ons-list>
+        </ons-page>
+      </ons-splitter-side>
+      <ons-splitter-content id="content" page="navigator.template"></ons-splitter-content>
+    </ons-splitter>
+
+    <template id="navigator.template">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left">
+            <ons-toolbar-button onclick="G.index.fn.openSplitter()">
+              <ons-icon icon="md-menu"></ons-icon>
+            </ons-toolbar-button>
+          </div>
+          <div class="center">
+            今日支出饼图
+          </div>
+        </ons-toolbar>
+        <ons-navigator swipeable id="navigator--main" page="daily-analysis.html"></ons-navigator>
+      </ons-page>
+    </template>
 
 
     <script>
-        if ('serviceWorker' in navigator) {
-          window.addEventListener('load', function () {
-            navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function (registration) {
-              console.log('SW registered: ', registration)
-            }).catch(function (registrationError) {
-              console.log('SW registration failed: ', registrationError)
-            })
+      //Init service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function (registration) {
+            console.log('SW registered: ', registration)
+          }).catch(function (registrationError) {
+            console.log('SW registration failed: ', registrationError)
           })
-        }
+        })
+      }
     </script>
 
     <script>
-      function randomScalingFactor(){
-        return 100
+      //Init global variable
+      console.log('DD???')
+      window.G = {};
+      G.index = {
+        fn: {
+          openSplitter: () => {
+            document.getElementById('menu').open();
+          },
+          load: (page) => {
+            document.getElementById('navigator--main').bringPageTop(page);
+            document.getElementById('menu').close();
+          }
+        }
       }
-
-      //Create today pie chart
-      const ctx = document.getElementById('chart--pie__day');
-      core.db.readAllCostToday().then(costs => {
-        return {
-          datasets: [{
-            data: costs.map(it => it.cost)
-          }],
-          labels: costs.map(it => it.type)
+      G.index.daily_analysis = {
+        fn: {
+          onShow: () => {
+            const ctx = document.getElementById('chart--pie__day');
+            core.db.readAllCostToday().then(costs => {
+              return {
+                datasets: [{
+                  data: costs.map(it => it.cost)
+                }],
+                labels: costs.map(it => it.type)
+              }
+            }).then(data => {
+              window.dayChart = new Chart(ctx, {
+                type: 'doughnut',
+                data,
+              });
+            })
+          }
         }
-      }).then(data => {
-        new Chart(ctx, {
-          type: 'doughnut',
-          data,
-        });
-      })
-
-      //Create Weekly Barchart
-      const ctx2 = document.getElementById('chart--line__week');
-      core.getWeeklyAnalysis(new Date()).then(dateCostMaps => {
-        const config = {
-    			type: 'line',
-    			data: {
-            labels: Object.keys(dateCostMaps),
-            datasets: [{
-              label: '本周支出',
-              data: Object.keys(dateCostMaps).map(key => {
-                return dateCostMaps[key]
-              })
-            }],
-    			},
+      }
+      G.index.weekly_analysis = {
+        fn: {
+          onShow: () => {
+            //Create Weekly Barchart
+            const ctx2 = document.getElementById('chart--line__week');
+            core.getWeeklyAnalysis(new Date()).then(dateCostMaps => {
+              const config = {
+          			type: 'line',
+          			data: {
+                  labels: Object.keys(dateCostMaps),
+                  datasets: [{
+                    label: '本周支出',
+                    data: Object.keys(dateCostMaps).map(key => {
+                      return dateCostMaps[key]
+                    })
+                  }],
+          			},
+              }
+              console.log(config.data)
+              return config
+            }).then((config) => {
+              new Chart(ctx2, config);
+            })
+          }
         }
-        console.log(config.data)
-        return config
-      }).then((config) => {
-        new Chart(ctx2, config);
-      })
+      }
+      G.index.weekly_analysis.new_cost = {
+        fn: {
+          onSelectChange: (event) => {
+            document.getElementById('input--type__new-cost').value = event.target.value
+          },
+          newCost: () => {
+            //TDOO: 
+          },
+        }
+      }
+    </script>
+
+    <script>
+      // Show event in every page
+      document.addEventListener('show', ({ target }) => {
+       if (target.matches('#page__daily-analysis')) {
+        console.log('#page__daily-analysis showed!')
+        G.index.daily_analysis.fn.onShow()
+       }else if (target.matches('#page__weekly-analysis')){
+        console.log('#page__weekly-analysis showed!')
+        G.index.weekly_analysis.fn.onShow()
+       }
+      });
     </script>
   </body>
 
