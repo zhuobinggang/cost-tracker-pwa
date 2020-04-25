@@ -15,3 +15,4 @@ registerRoute(
   /\//,
   new CacheOnly()
 );
+const v = 2;
