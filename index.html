@@ -140,7 +140,7 @@
               const list = document.getElementById('list__daily-cost')
               list.innerHTML = ''
               costs.forEach(cost => {
-                const li = cost.detail == 'No detail' ? `
+                const li = cost.detail == '' || cost.detail == null ? `
                   <ons-list-item>
                     ${cost.type}: ${cost.cost}
                   </ons-list-item>
@@ -189,7 +189,13 @@
                     }),
                     backgroundColor: G.state.chartColors.green.replace(')', ', 0.4)').replace('rgb', 'rgba'),
                   }],
-          			},
+                },
+                options: {
+                  tooltips: {
+                    enabled: false,
+                  }
+                }
+
               }
               console.log(config.data)
               return config
