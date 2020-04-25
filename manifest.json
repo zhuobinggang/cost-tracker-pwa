@@ -6,8 +6,8 @@
   "background_color": "#fff",
   "description": "A simple cost tracker app",
   "icons": [{
-    "src": "images/touch/homescreen48.png",
-    "sizes": "48x48",
+    "src": "imgs/icon.png",
+    "sizes": "512x512",
     "type": "image/png"
   }]
 }

@@ -1,3 +1,22 @@
 <ons-page id="page__weekly-analysis">
-  <canvas id="chart--line__week" width="300" height="300"></canvas>
+  <ons-card>
+    <div style="width: 100%;display: flex; justify-content: center;">
+      <div style="position: relative; max-width: 600px; max-height: 600px; width: 100%;">
+        <canvas id="chart--line__week"></canvas>
+      </div>
+    </div>
+  </ons-card>
+
+  <div style="height: 96px; width: 100px;"></div>
+
+  <ons-fab position="bottom right">
+    <ons-icon icon="md-mail-reply" style="transform: scaleX(-1);" onclick="G.index.weekly_analysis.fn.nextWeek()"></ons-icon>
+  </ons-fab>
+  <ons-fab position="bottom right" style="right: 96px;">
+    <ons-icon icon="md-mail-reply" onclick="G.index.weekly_analysis.fn.prevWeek()"></ons-icon>
+  </ons-fab>
+  <ons-fab position="bottom right" style="right: 176px;">
+    <ons-icon icon="md-close" onclick="G.index.fn.load('daily-analysis.html')"></ons-icon>
+  </ons-fab>
+
 </ons-page>

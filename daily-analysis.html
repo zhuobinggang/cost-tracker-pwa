@@ -1,7 +1,31 @@
 <ons-page id="page__daily-analysis">
-  <canvas id="chart--pie__day" width="400" height="400"></canvas>
+
+  <ons-card>
+    <div style="width: 100%;display: flex; justify-content: center;">
+      <div style="position: relative; max-width: 600px; max-height: 600px; width: 100%;">
+        <canvas id="chart--pie__day"></canvas>
+      </div>
+    </div>
+  </ons-card>
+
+  <ons-card>
+    <ons-list id="list__daily-cost">
+      <ons-list-item expandable>
+        template
+        <div class="expandable-content">template</div>
+      </ons-list-item>
+    </ons-list>
+  </ons-card>
+  <div style="height: 96px; width: 100px;"></div>
 
   <ons-fab position="bottom right">
     <ons-icon icon="md-plus" onclick="G.index.fn.load('new-cost.html')"></ons-icon>
   </ons-fab>
+  <ons-fab position="bottom right" style="right: 96px;">
+    <ons-icon icon="md-mail-reply" style="transform: scaleX(-1);" onclick="G.index.daily_analysis.fn.nextDay()"></ons-icon>
+  </ons-fab>
+  <ons-fab position="bottom right" style="right: 172px;">
+    <ons-icon icon="md-mail-reply" onclick="G.index.daily_analysis.fn.prevDay()"></ons-icon>
+  </ons-fab>
+  
 </ons-page>

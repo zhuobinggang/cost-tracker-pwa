@@ -2,12 +2,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--link rel="manifest" href="/manifest.json"-->
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/vendor/onsen/onsenui.css">
     <link rel="stylesheet" href="/vendor/onsen/onsen-css-components.min.css">
     <script src="/vendor/onsen/onsenui.min.js"></script>
     <script src="/vendor/Chart.min.js"></script>
     <script src="/js/core/bundle.js"></script>
+    <style>
+      .form--new-cost__input {
+        width: 176px;
+      }
+    </style>
   </head>
 
   <body>
@@ -36,7 +41,7 @@
               <ons-icon icon="md-menu"></ons-icon>
             </ons-toolbar-button>
           </div>
-          <div class="center">
+          <div id="toolbar__title" class="center">
             今日支出饼图
           </div>
         </ons-toolbar>
@@ -61,7 +66,33 @@
     <script>
       //Init global variable
       console.log('DD???')
-      window.G = {};
+      window.G = {
+        id: (id) => {
+          return document.getElementById(id)
+        },
+        show: (element) => {
+          element.style.display = ''
+        },
+        hide: (element) => {
+          element.style.display = 'none'
+        },
+        state: {
+          chartColors: {
+            red: "rgb(255, 99, 132)",
+            yellow: "rgb(255, 205, 86)",
+            blue: "rgb(54, 162, 235)",
+            green: "rgb(75, 192, 192)",
+            grey: "rgb(201, 203, 207)",
+            orange: "rgb(255, 159, 64)",
+            purple: "rgb(153, 102, 255)",
+          }
+        },
+        fn: {
+          changeToolbarTitle: (title) => {
+            document.getElementById('toolbar__title').innerHTML = title;
+          }
+        }
+      };
       G.index = {
         fn: {
           openSplitter: () => {
@@ -74,31 +105,79 @@
         }
       }
       G.index.daily_analysis = {
+        state: {
+          dateOffset: 0,
+        },
         fn: {
           onShow: () => {
+            const today = new Date()
+            const date = new Date()
+            date.setDate(date.getDate() + G.index.daily_analysis.state.dateOffset)
+            if(today.getFullYear() == date.getFullYear() && today.getMonth() == date.getMonth() && today.getDate() == date.getDate()){
+              G.fn.changeToolbarTitle(`今日支出饼图`);
+            }else{
+              G.fn.changeToolbarTitle(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}支出饼图`);
+            }
             const ctx = document.getElementById('chart--pie__day');
-            core.db.readAllCostToday().then(costs => {
-              return {
+            core.db.readAllCostInDate(date).then(costs => {
+              const chartData = {
                 datasets: [{
-                  data: costs.map(it => it.cost)
+                  data: costs.map(it => it.cost),
+                  backgroundColor: Object.keys(G.state.chartColors).map(key => {
+                    return G.state.chartColors[key]
+                  }),
                 }],
                 labels: costs.map(it => it.type)
               }
-            }).then(data => {
+              return [chartData, costs]
+            }).then(([data, costs]) => {
               window.dayChart = new Chart(ctx, {
                 type: 'doughnut',
                 data,
               });
+              return costs
+            }).then(costs => {
+              const list = document.getElementById('list__daily-cost')
+              list.innerHTML = ''
+              costs.forEach(cost => {
+                const li = cost.detail == 'No detail' ? `
+                  <ons-list-item>
+                    ${cost.type}: ${cost.cost}
+                  </ons-list-item>
+                `: `
+                  <ons-list-item expandable>
+                    ${cost.type}: ${cost.cost}
+                    <div class="expandable-content">
+                      ${cost.detail}
+                    </div>
+                  </ons-list-item>
+                `;
+                list.appendChild(ons.createElement(li))
+              })
             })
+          },
+          prevDay: () => {
+            G.index.daily_analysis.state.dateOffset -= 1;
+            G.index.daily_analysis.fn.onShow()
+          },
+          nextDay: () => {
+            G.index.daily_analysis.state.dateOffset += 1;
+            G.index.daily_analysis.fn.onShow()
           }
         }
       }
       G.index.weekly_analysis = {
+        state: {
+          weekOffset: 0,
+        },
         fn: {
           onShow: () => {
+            G.fn.changeToolbarTitle('周支出统计')
+            const date = new Date()
+            date.setDate(date.getDate() +  G.index.weekly_analysis.state.weekOffset * 7)
             //Create Weekly Barchart
             const ctx2 = document.getElementById('chart--line__week');
-            core.getWeeklyAnalysis(new Date()).then(dateCostMaps => {
+            core.getWeeklyAnalysis(date).then(dateCostMaps => {
               const config = {
           			type: 'line',
           			data: {
@@ -107,7 +186,8 @@
                     label: '本周支出',
                     data: Object.keys(dateCostMaps).map(key => {
                       return dateCostMaps[key]
-                    })
+                    }),
+                    backgroundColor: G.state.chartColors.green.replace(')', ', 0.4)').replace('rgb', 'rgba'),
                   }],
           			},
               }
@@ -116,17 +196,83 @@
             }).then((config) => {
               new Chart(ctx2, config);
             })
-          }
+          },
+          prevWeek: () => {
+            G.index.weekly_analysis.state.weekOffset -= 1;
+            G.index.weekly_analysis.fn.onShow()
+          },
+          nextWeek: () => {
+            G.index.weekly_analysis.state.weekOffset += 1;
+            G.index.weekly_analysis.fn.onShow()
+          },
         }
       }
-      G.index.weekly_analysis.new_cost = {
+      G.index.daily_analysis.new_cost = {
         fn: {
+          onShow: () => {
+            G.fn.changeToolbarTitle('新增支出')
+
+            //如果之前为空填充当前时间
+            if(G.id('input--year__new-cost').value || G.id('input--month__new-cost').value || G.id('input--date__new-cost').value){
+              // Do Nothing
+            }else{
+              G.index.daily_analysis.new_cost.fn.resetTime()
+            }
+
+            // 检查是否显示清除按钮
+            G.index.daily_analysis.new_cost.fn.checkShowClearBtn()
+          },
+          resetTime: (date = new Date()) => {
+            G.id('input--year__new-cost').value = date.getFullYear()
+            G.id('input--month__new-cost').value =  date.getMonth() + 1
+            G.id('input--date__new-cost').value =  date.getDate()
+          },
           onSelectChange: (event) => {
-            document.getElementById('input--type__new-cost').value = event.target.value
+            const {target} = event
+            document.getElementById('input--type__new-cost').value = target.value
+            G.index.daily_analysis.new_cost.fn.checkShowClearBtn()
           },
           newCost: () => {
-            //TDOO: 
+            const type = G.id('input--type__new-cost').value
+            const cost = G.id('input--cost__new-cost').value
+            const detail = G.id('input--detail__new-cost').value
+            const time = new Date()
+            G.id('input--year__new-cost').value && time.setFullYear(G.id('input--year__new-cost').value)
+            G.id('input--month__new-cost').value && time.setMonth(parseInt(G.id('input--month__new-cost').value) - 1)
+            G.id('input--date__new-cost').value && time.setDate(G.id('input--date__new-cost').value)
+            G.index.daily_analysis.new_cost.fn.resetTime(time)
+            return core.db.save({type, cost, detail, time}).then(() => {
+              //返回首页并显示新的饼图
+              G.index.fn.load('daily-analysis.html')
+            })
           },
+          onInputChange: ({target}) => {
+            G.index.daily_analysis.new_cost.fn.checkShowClearBtn()
+          },
+          // 检查是否显示清除按钮
+          checkShowClearBtn: () => {
+            const shouldShowClearBtn = G.index.daily_analysis.new_cost.fn.formInputAndSelects().map(valuable => valuable.value).find(val => val != null && val != '') != null;
+            if(shouldShowClearBtn){
+              //show clear btn
+              G.show(document.getElementById('fab--clear__new-cost'))
+            }else{
+              G.hide(document.getElementById('fab--clear__new-cost'))
+            }
+          },
+          formInputAndSelects: () => {
+            const prefix = 'input--';
+            const suffix = '__new-cost';
+            const inputs = ['type', 'cost', 'detail', 'year', 'month', 'date'].map(modifier => {
+              return document.getElementById(`${prefix}${modifier}${suffix}`)
+            })
+            return inputs.concat(document.getElementById('select--type__new-cost'))
+          },
+          clearForm: () => {
+            G.index.daily_analysis.new_cost.fn.formInputAndSelects().forEach(el => {
+              el.value = ''
+            })
+            G.hide(document.getElementById('fab--clear__new-cost'))
+          }
         }
       }
     </script>
@@ -140,6 +286,9 @@
        }else if (target.matches('#page__weekly-analysis')){
         console.log('#page__weekly-analysis showed!')
         G.index.weekly_analysis.fn.onShow()
+       }else if (target.matches('#page__new-cost')){
+        console.log('#page__new-cost showed!')
+        G.index.daily_analysis.new_cost.fn.onShow()
        }
       });
     </script>

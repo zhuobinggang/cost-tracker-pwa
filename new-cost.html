@@ -1,7 +1,7 @@
 <ons-page id="page__new-cost">
   <div style="text-align: center; margin-top: 30px;">
     <p>
-      <ons-select id="select--type__new-cost" onchange="G.index.weekly_analysis.new_cost.fn.onSelectChange(event)">
+      <ons-select class="form--new-cost__input" id="select--type__new-cost" onchange="G.index.daily_analysis.new_cost.fn.onSelectChange(event)">
         <option value="">预设类型</option>
         <option value="食物">食物</option>
         <option value="衣物">衣物</option>
@@ -9,17 +9,34 @@
       </ons-select>
     </p>
     <p>
-      <ons-input id="input--type__new-cost" modifier="underbar" placeholder="类型" float></ons-input>
+      <ons-input class="form--new-cost__input" id="input--type__new-cost" modifier="underbar" placeholder="类型" onchange="G.index.daily_analysis.new_cost.fn.onInputChange(event)" float></ons-input>
     </p>
     <p>
-      <ons-input type="number" id="input--cost__new-cost" modifier="underbar" placeholder="支出" float></ons-input>
+      <ons-input onchange="G.index.daily_analysis.new_cost.fn.onInputChange(event)" class="form--new-cost__input" type="number" id="input--cost__new-cost" modifier="underbar" placeholder="支出" float></ons-input>
     </p>
     <p>
-      <ons-input id="input--detail__new-cost" modifier="underbar" placeholder="详情" float></ons-input>
+      <ons-input onchange="G.index.daily_analysis.new_cost.fn.onInputChange(event)" class="form--new-cost__input" id="input--detail__new-cost" modifier="underbar" placeholder="详情" float></ons-input>
     </p>
+
+    <div style="display: flex; justify-content: center;">
+      <div class="form--new-cost__input" style="height: 32px; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-gap: 10px;">
+        <ons-input onchange="G.index.daily_analysis.new_cost.fn.onInputChange(event)" type="number" id="input--year__new-cost" modifier="underbar" placeholder="年" float></ons-input>
+        <ons-input onchange="G.index.daily_analysis.new_cost.fn.onInputChange(event)" type="number" id="input--month__new-cost" modifier="underbar" placeholder="月" float></ons-input>
+        <ons-input onchange="G.index.daily_analysis.new_cost.fn.onInputChange(event)" type="number" id="input--date__new-cost" modifier="underbar" placeholder="日" float></ons-input>
+      </div>
+    </div>
+
 
   </div>
   <ons-fab position="bottom right">
-    <ons-icon icon="md-check" onclick="G.index.weekly_analysis.new_cost.fn.newCost()"></ons-icon>
+    <ons-icon icon="md-check" onclick="G.index.daily_analysis.new_cost.fn.newCost()"></ons-icon>
+  </ons-fab>
+
+  <ons-fab position="bottom right" style="right: 96px;">
+    <ons-icon icon="md-close" onclick="G.index.fn.load('daily-analysis.html')"></ons-icon>
+  </ons-fab>
+
+  <ons-fab id="fab--clear__new-cost" position="bottom right" style="right: 176px; display: none;">
+    <ons-icon icon="md-delete" onclick="G.index.daily_analysis.new_cost.fn.clearForm()"></ons-icon>
   </ons-fab>
 </ons-page>
