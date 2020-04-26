@@ -8,7 +8,9 @@ check if have input while onshow && onchange(input)
 - [X] 显示今日支出细项
 - [X] 用仪表盘代替手写的fab
 - [X] toolbar标题
+- [X] 发布PWA
 
-- [ ] 发布PWA
+- [ ] 删除cost
+
 - [ ] 中文字体有问题，换个好看的
 - [ ] l18n

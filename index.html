@@ -140,21 +140,20 @@
               const list = document.getElementById('list__daily-cost')
               list.innerHTML = ''
               costs.forEach(cost => {
-                const li = cost.detail == '' || cost.detail == null ? `
-                  <ons-list-item>
-                    ${cost.type}: ${cost.cost}
-                  </ons-list-item>
-                `: `
+                const li = `
                   <ons-list-item expandable>
                     ${cost.type}: ${cost.cost}
                     <div class="expandable-content">
-                      ${cost.detail}
+                      ${cost.detail} <ons-button onclick="G.index.daily_analysis.fn.delete()">删除</ons-button>
                     </div>
                   </ons-list-item>
                 `;
                 list.appendChild(ons.createElement(li))
               })
             })
+          },
+          delete: () => {
+            console.log('delete')
           },
           prevDay: () => {
             G.index.daily_analysis.state.dateOffset -= 1;
