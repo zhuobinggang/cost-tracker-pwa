@@ -20,6 +20,7 @@ G.lang = (() => {
     clothe: ['衣服', 'clothe'],
     entertainment: ['娱乐', 'entertainment'],
     detail: ['详情', 'detail'],
+    switchLang: ['Switch English', '切换中文']
   }
   const langIndice = {
     ch: 0,
@@ -28,8 +29,9 @@ G.lang = (() => {
   const getByKey = (key) => {
     return i18n[key][langIndice[lang]];
   }
+
   //let lang = 'en';
-  let lang = 'ch';
+  let lang = localStorage.getItem('lang') || 'en';
 
   function i18nAttrToString(attrVal){
     return attrVal.split(' ').map(key => {
@@ -62,5 +64,9 @@ G.lang = (() => {
         el.innerHTML = result;
       });
     },
+    switchLang: () => {
+      lang = lang == 'en' ? 'ch' : 'en';
+      localStorage.setItem('lang', lang);
+    }
   }
 })();
