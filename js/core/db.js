@@ -51,6 +51,9 @@ function getLocalStorage(){
       db.clear();
       return Promise.resolve()
     },
+    removeItem: function(key){
+      db.removeItem(key);
+    }
   }
 }
 
@@ -193,7 +196,11 @@ function setAll(list, date){
   list = validList(list);
   const storage = getStorage();
   //2. db.setItem(datekey, list)
-  return storage.setItem(validatedKeyDate(date), JSON.stringify(list));
+  if(list.length > 0){
+    return storage.setItem(validatedKeyDate(date), JSON.stringify(list));
+  }else{
+    return storage.removeItem(validatedKeyDate(date));
+  }
 }
 
 function remove(indice, date){
