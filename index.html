@@ -54,8 +54,11 @@
       <ons-page>
         <ons-toolbar>
           <div class="left">
-            <ons-toolbar-button onclick="G.index.fn.openSplitter()">
+            <ons-toolbar-button id="toolbar-btn--menu" onclick="G.index.fn.openSplitter()">
               <ons-icon icon="md-menu"></ons-icon>
+            </ons-toolbar-button>
+            <ons-toolbar-button id="toolbar-btn--back" style="display: none" onclick="G.index.fn.back()">
+              <ons-icon icon="md-close"></ons-icon>
             </ons-toolbar-button>
           </div>
           <div id="toolbar__title" class="center">

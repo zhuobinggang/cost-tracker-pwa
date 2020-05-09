@@ -92,13 +92,41 @@ function rgbStrTorgba(str){
 
   };
   G.index = {
+    state:{
+      level1Pages: ['daily-analysis.html'],
+      level2Pages: ['new-cost.html', 'weekly-analysis.html', 'monthly-analysis.html'],
+    },
     fn: {
       openSplitter: () => {
         document.getElementById('menu').open();
       },
+      switchToolbarBtnByPageName: (page) => {
+        //Check show toolbar button
+        if(G.index.state.level1Pages.indexOf(page) > -1){
+          console.log('111')
+          document.getElementById("toolbar-btn--menu").style.display = '';
+          document.getElementById("toolbar-btn--back").style.display = 'none';
+
+        }else if(G.index.state.level2Pages.indexOf(page) > -1){
+          console.log('222')
+          document.getElementById("toolbar-btn--menu").style.display = 'none';
+          document.getElementById("toolbar-btn--back").style.display = '';
+
+        }else{
+          console.log('333')
+          document.getElementById("toolbar-btn--menu").style.display = '';
+          document.getElementById("toolbar-btn--back").style.display = 'none';
+        }
+      },
+      back: () => {
+        document.getElementById('navigator--main').popPage().then(page => {
+          G.index.fn.switchToolbarBtnByPageName(page.getAttribute('id'));
+        })
+      },
       load: (page) => {
         document.getElementById('navigator--main').bringPageTop(page);
         document.getElementById('menu').close();
+        G.index.fn.switchToolbarBtnByPageName(page);
       }
     }
   }
@@ -297,10 +325,23 @@ function rgbStrTorgba(str){
     }
   }
   G.index.monthly_analysis = {
+    state: {
+      monthOffset: 0,
+    },
     fn: {
+      prev: () => {
+        G.index.monthly_analysis.state.monthOffset -= 1;
+        G.index.monthly_analysis.fn.onShow()
+      },
+      next: () => {
+        G.index.monthly_analysis.state.monthOffset += 1;
+        G.index.monthly_analysis.fn.onShow()
+      },
       onShow: () => {
-        G.fn.changeToolbarTitle('月支出统计')
-        core.getMonthlyAnalysis().then(dateCostMaps => {
+        const date = new Date()
+        date.setMonth(date.getMonth() +  G.index.monthly_analysis.state.monthOffset)
+        G.fn.changeToolbarTitle(`${date.getFullYear()}-${date.getMonth() + 1}支出统计`)
+        core.getMonthlyAnalysis(date).then(dateCostMaps => {
           const labels = Object.keys(dateCostMaps);
           const values = labels.map(key => {
             return dateCostMaps[key];
