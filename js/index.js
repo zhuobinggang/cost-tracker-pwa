@@ -25,6 +25,9 @@ function rgbStrTorgba(str){
         grey: "rgb(201, 203, 207)",
         orange: "rgb(255, 159, 64)",
         purple: "rgb(153, 102, 255)",
+      },
+      chartRefs: {
+        // Auto filled
       }
     },
     fn: {
@@ -48,9 +51,12 @@ function rgbStrTorgba(str){
               enabled: false,
             }
           }
-
         }
-        new Chart(ctx2, config);
+        if(G.state.chartRefs[canvasId] != null){
+          console.log('prev line destroyed')
+          G.state.chartRefs[canvasId].destroy();
+        }
+        G.state.chartRefs[canvasId] = new Chart(ctx2, config);
       },
       reloadPieChart: (id, values, labels) => {
         const ctx = document.getElementById(id);
@@ -63,7 +69,11 @@ function rgbStrTorgba(str){
           }],
           labels,
         }
-        new Chart(ctx, {
+        if(G.state.chartRefs[id] != null){
+          console.log('prev pie destroyed')
+          G.state.chartRefs[id].destroy();
+        }
+        G.state.chartRefs[id] = new Chart(ctx, {
           type: 'doughnut',
           data: chartData,
         });
@@ -146,7 +156,7 @@ function rgbStrTorgba(str){
         }
         const ctx = document.getElementById('chart--pie__day');
         core.db.readAllCostInDate(date).then(costs => {
-          const chartData = {
+          /*const chartData = {
             datasets: [{
               data: costs.map(it => it.cost),
               backgroundColor: Object.keys(G.state.chartColors).map(key => {
@@ -154,13 +164,15 @@ function rgbStrTorgba(str){
               }),
             }],
             labels: costs.map(it => it.type)
-          }
-          return [chartData, costs]
+          }*/
+          //return [chartData, costs]
+          return [null, costs]
         }).then(([data, costs]) => {
-          window.dayChart = new Chart(ctx, {
+          G.fn.reloadPieChart('chart--pie__day', costs.map(it => it.cost), costs.map(it => it.type));
+          /*window.dayChart = new Chart(ctx, {
             type: 'doughnut',
             data,
-          });
+          });*/
           return costs
         }).then(costs => {
           const list = document.getElementById('list__daily-cost')
