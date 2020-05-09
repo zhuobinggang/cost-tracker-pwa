@@ -222,7 +222,7 @@ function rgbStrTorgba(str){
         })
 
         //Show pie chart
-        G.index.weekly_analysis.fn.showPieChart()
+        G.index.weekly_analysis.fn.showPieChart(date)
       },
       prevWeek: () => {
         G.index.weekly_analysis.state.weekOffset -= 1;
@@ -232,11 +232,9 @@ function rgbStrTorgba(str){
         G.index.weekly_analysis.state.weekOffset += 1;
         G.index.weekly_analysis.fn.onShow()
       },
-      showPieChart: () => {
+      showPieChart: (date) => {
         //1. 当前周所有支出，相同type聚合，然后按照总量排序
         //2. 根据排序结果输出饼图
-        const date = new Date()
-        date.setDate(date.getDate() +  G.index.weekly_analysis.state.weekOffset * 7)
         // 当前周所有支出
         core.getCostsThisWeek(date).then(costs => {
           // 聚合
@@ -351,13 +349,13 @@ function rgbStrTorgba(str){
         })
 
         // 月支出饼图
-        G.index.monthly_analysis.fn.showPieChart()
+        G.index.monthly_analysis.fn.showPieChart(date)
       },
-      showPieChart: () => {
+      showPieChart: (date) => {
         //1. 当前月所有支出，相同type聚合，然后按照总量排序
         //2. 根据排序结果输出饼图
         // 当前周所有支出
-        core.getCostsThisMonth().then(costs => {
+        core.getCostsThisMonth(date).then(costs => {
           // 聚合
           return G.fn.aggregatedTypeCostList(costs);
         }).then(typeCostList => {
