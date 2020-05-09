@@ -7,6 +7,7 @@ function rgbStrTorgba(str){
   console.log('DD???')
 
   window.G = {
+    lang: null, //To be filled by js/lang.js
     id: (id) => {
       return document.getElementById(id)
     },
@@ -28,7 +29,8 @@ function rgbStrTorgba(str){
       },
       chartRefs: {
         // Auto filled
-      }
+      },
+      lang: 'ch',
     },
     fn: {
       changeToolbarTitle: (title) => {
@@ -97,7 +99,10 @@ function rgbStrTorgba(str){
           }, []);
           return typeCostList;
         });
-      }
+      },
+      refreshLang: () => {
+        document.getElementsByClassName();
+      },
     }
 
   };
@@ -150,29 +155,13 @@ function rgbStrTorgba(str){
         const date = new Date()
         date.setDate(date.getDate() + G.index.daily_analysis.state.dateOffset)
         if(today.getFullYear() == date.getFullYear() && today.getMonth() == date.getMonth() && today.getDate() == date.getDate()){
-          G.fn.changeToolbarTitle(`今日支出饼图`);
+          G.fn.changeToolbarTitle(`${G.lang.getByKey('today')} ${G.lang.getByKey('costPieChart')}`);
         }else{
-          G.fn.changeToolbarTitle(`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}支出饼图`);
+          G.fn.changeToolbarTitle(`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${G.lang.getByKey('costPieChart')}`);
         }
         const ctx = document.getElementById('chart--pie__day');
-        core.db.readAllCostInDate(date).then(costs => {
-          /*const chartData = {
-            datasets: [{
-              data: costs.map(it => it.cost),
-              backgroundColor: Object.keys(G.state.chartColors).map(key => {
-                return G.state.chartColors[key]
-              }),
-            }],
-            labels: costs.map(it => it.type)
-          }*/
-          //return [chartData, costs]
-          return [null, costs]
-        }).then(([data, costs]) => {
+        core.db.readAllCostInDate(date).then((costs) => {
           G.fn.reloadPieChart('chart--pie__day', costs.map(it => it.cost), costs.map(it => it.type));
-          /*window.dayChart = new Chart(ctx, {
-            type: 'doughnut',
-            data,
-          });*/
           return costs
         }).then(costs => {
           const list = document.getElementById('list__daily-cost')
@@ -185,7 +174,7 @@ function rgbStrTorgba(str){
                   <div class="expandable-content__daily-cost--container">
                     <div>${cost.detail}</div>
                     <div onclick="G.index.daily_analysis.fn.delete(${indice})" class="expandable-content__daily-cost--right">
-                      <div class="delete__daily-cost--text">delete</div>
+                      <div class="delete__daily-cost--text">${G.lang.getByKey('delete')}</div>
                     </div>
                   </div>
                 </div>
@@ -220,7 +209,7 @@ function rgbStrTorgba(str){
     },
     fn: {
       onShow: () => {
-        G.fn.changeToolbarTitle('周支出统计')
+        G.fn.changeToolbarTitle(G.lang.getByKey('weekCostStastic'))
         const date = new Date()
         date.setDate(date.getDate() +  G.index.weekly_analysis.state.weekOffset * 7)
          
@@ -229,7 +218,7 @@ function rgbStrTorgba(str){
           const values = labels.map(key => {
             return dateCostMaps[key]
           })
-          G.fn.reloadLineChart('chart--line__week', labels, values, '周支出');
+          G.fn.reloadLineChart('chart--line__week', labels, values, G.lang.getByKey('weekCost'));
         })
 
         //Show pie chart
@@ -271,7 +260,7 @@ function rgbStrTorgba(str){
   G.index.daily_analysis.new_cost = {
     fn: {
       onShow: () => {
-        G.fn.changeToolbarTitle('新增支出')
+        G.fn.changeToolbarTitle(G.lang.getByKey('addNewCost'))
 
         //如果之前为空填充当前时间
         if(G.id('input--year__new-cost').value || G.id('input--month__new-cost').value || G.id('input--date__new-cost').value){
@@ -352,13 +341,13 @@ function rgbStrTorgba(str){
       onShow: () => {
         const date = new Date()
         date.setMonth(date.getMonth() +  G.index.monthly_analysis.state.monthOffset)
-        G.fn.changeToolbarTitle(`${date.getFullYear()}-${date.getMonth() + 1}支出统计`)
+        G.fn.changeToolbarTitle(`${date.getFullYear()}-${date.getMonth() + 1} ${G.lang.getByKey('costStastic')}`)
         core.getMonthlyAnalysis(date).then(dateCostMaps => {
           const labels = Object.keys(dateCostMaps);
           const values = labels.map(key => {
             return dateCostMaps[key];
           })
-          G.fn.reloadLineChart('chart--line__month', labels, values, '月支出')
+          G.fn.reloadLineChart('chart--line__month', labels, values, G.lang.getByKey('monthCost'))
         })
 
         // 月支出饼图

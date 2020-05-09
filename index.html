@@ -36,13 +36,14 @@
         <ons-page>
           <ons-list>
             <ons-list-item onclick="G.index.fn.load('daily-analysis.html')" tappable>
-              日支出分析
+              <span class="i18n" i18n="day cost analysis">日支出分析</span>
             </ons-list-item>
             <ons-list-item onclick="G.index.fn.load('weekly-analysis.html')" tappable>
-              周支出分析
+              <span class="i18n" i18n="week cost analysis">周支出分析</span>
             </ons-list-item>
             <ons-list-item onclick="G.index.fn.load('monthly-analysis.html')" tappable>
-              月支出分析
+              <span class="i18n" i18n="month cost analysis">月支出分析</span>
+              
             </ons-list-item>
           </ons-list>
         </ons-page>
@@ -62,7 +63,7 @@
             </ons-toolbar-button>
           </div>
           <div id="toolbar__title" class="center">
-            今日支出饼图
+            Loading...
           </div>
         </ons-toolbar>
         <ons-navigator swipeable id="navigator--main" page="daily-analysis.html"></ons-navigator>
@@ -84,23 +85,25 @@
     </script>
 
     <script src="js/index.js"> </script>
+    <script src="js/lang.js"> </script>
 
     <script>
       // Show event in every page
       document.addEventListener('show', ({ target }) => {
-       if (target.matches('#page__daily-analysis')) {
-        console.log('#page__daily-analysis showed!')
-        G.index.daily_analysis.fn.onShow()
-       }else if (target.matches('#page__weekly-analysis')){
-        console.log('#page__weekly-analysis showed!')
-        G.index.weekly_analysis.fn.onShow()
-       }else if (target.matches('#page__new-cost')){
-        console.log('#page__new-cost showed!')
-        G.index.daily_analysis.new_cost.fn.onShow()
-       }else if (target.matches('#page__monthly-analysis')){
-        console.log('#page__monthly-analysis showed!')
-        G.index.monthly_analysis.fn.onShow()
-       }
+        G.lang.refresh();
+        if (target.matches('#page__daily-analysis')) {
+         console.log('#page__daily-analysis showed!')
+         G.index.daily_analysis.fn.onShow()
+        }else if (target.matches('#page__weekly-analysis')){
+         console.log('#page__weekly-analysis showed!')
+         G.index.weekly_analysis.fn.onShow()
+        }else if (target.matches('#page__new-cost')){
+         console.log('#page__new-cost showed!')
+         G.index.daily_analysis.new_cost.fn.onShow()
+        }else if (target.matches('#page__monthly-analysis')){
+         console.log('#page__monthly-analysis showed!')
+         G.index.monthly_analysis.fn.onShow()
+        }
       });
     </script>
   </body>

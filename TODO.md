@@ -18,8 +18,8 @@ check if have input while onshow && onchange(input)
 load 2级页面时，显示返回，隐藏菜单按钮, load 1级页面时显示菜单，隐藏返回
 ```
 - [X] 月支出分析增加上下月分析(21:14)
+- [ ] l18n(until 23:00)
 
 - [ ] 演示用内容
 - [ ] 不允许超过今天的日期
 - [ ] 中文字体有问题，换个好看的
-- [ ] l18n
