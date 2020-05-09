@@ -110,13 +110,7 @@ const isTwoCostEqual = (c1, c2) => {
 }
 
 const readAllCostInDate = function(time){
-  if(typeof time == 'string'){
-    time = dateFormatted(new Date(time))
-  }else if(time == null){
-    time = dateFormatted(new Date())
-  }else{
-    time = dateFormatted(time)
-  }
+  time = validatedKeyDate(time);
   const storage = getStorage();
   return storage.getItem(time).then(item => {
     //console.log("ReadAllCostInDate: ")
@@ -183,9 +177,38 @@ function exitNarrativeMode(){
   return getStorage().setItem('non-narrative-mode', true)
 }
 
+function validatedKeyDate(time){
+  if(typeof time == 'string'){
+    time = dateFormatted(new Date(time))
+  }else if(time == null){
+    time = dateFormatted(new Date())
+  }else{
+    time = dateFormatted(time)
+  }
+  return time;
+}
+
+function setAll(list, date){
+  //1. Reset time in list as date
+  list = validList(list);
+  const storage = getStorage();
+  //2. db.setItem(datekey, list)
+  return storage.setItem(validatedKeyDate(date), JSON.stringify(list));
+}
+
+function remove(indice, date){
+  return readAllCostInDate(date).then(list => {
+    list.splice(indice, 1);
+    return setAll(list, date)
+  })
+}
+
+
 module.exports = {
   save,  isTwoCostEqual, dateFormatted, readAllCostInDate,
   emptyAll,
   readAllCostToday: readAllCostInDate,
   saveList,logoutCacheDb,getIsFirstTimeEnterApp,exitNarrativeMode,
+  setAll,
+  remove,
 };

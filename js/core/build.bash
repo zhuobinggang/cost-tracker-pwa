@@ -1,0 +1,1 @@
+browserify index.js --s core > bundle.js

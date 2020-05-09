@@ -10,7 +10,13 @@ check if have input while onshow && onchange(input)
 - [X] toolbar标题
 - [X] 发布PWA
 
-- [ ] 删除cost
+- [X] favicon(until 17:10)(17:07)
+- [X] 删除cost(until 17:30)(18:00)(18:22)
+- [ ] 演示用内容
+- [ ] 不允许超过今天的日期
+- [ ] 月支出分析的图表大小控制一下
+- [ ] 月支出分析增加上下月分析
+- [ ] 每个页面增加返回按钮
 
 - [ ] 中文字体有问题，换个好看的
 - [ ] l18n

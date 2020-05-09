@@ -135,13 +135,7 @@ const isTwoCostEqual = (c1, c2) => {
 }
 
 const readAllCostInDate = function(time){
-  if(typeof time == 'string'){
-    time = dateFormatted(new Date(time))
-  }else if(time == null){
-    time = dateFormatted(new Date())
-  }else{
-    time = dateFormatted(time)
-  }
+  time = validatedKeyDate(time);
   const storage = getStorage();
   return storage.getItem(time).then(item => {
     //console.log("ReadAllCostInDate: ")
@@ -208,12 +202,42 @@ function exitNarrativeMode(){
   return getStorage().setItem('non-narrative-mode', true)
 }
 
+function validatedKeyDate(time){
+  if(typeof time == 'string'){
+    time = dateFormatted(new Date(time))
+  }else if(time == null){
+    time = dateFormatted(new Date())
+  }else{
+    time = dateFormatted(time)
+  }
+  return time;
+}
+
+function setAll(list, date){
+  //1. Reset time in list as date
+  list = validList(list);
+  const storage = getStorage();
+  //2. db.setItem(datekey, list)
+  return storage.setItem(validatedKeyDate(date), JSON.stringify(list));
+}
+
+function remove(indice, date){
+  return readAllCostInDate(date).then(list => {
+    list.splice(indice, 1);
+    return setAll(list, date)
+  })
+}
+
+
 module.exports = {
   save,  isTwoCostEqual, dateFormatted, readAllCostInDate,
   emptyAll,
   readAllCostToday: readAllCostInDate,
   saveList,logoutCacheDb,getIsFirstTimeEnterApp,exitNarrativeMode,
+  setAll,
+  remove,
 };
+
 },{"./cacheStorage":1}],3:[function(require,module,exports){
 const db = require('./db')
 
@@ -316,6 +340,28 @@ const totalCost = (costItems) => {
   },0)
 }
 
+const getCostsByDates = (dates) => {
+  const all = dates.map((date) => {
+    return db.readAllCostInDate(date)
+  })
+  return Promise.all(all).then(costsList => {
+    return costsList.reduce((acc ,costs) => {
+      return acc.concat(costs)
+    }, [])
+  })
+}
+
+const getCostsThisWeek = (date) => {
+  date = typeof date == 'object' ? db.dateFormatted(date) : db.dateFormatted(new Date(date));
+  return getCostsByDates(getWeekdates(date))
+}
+
+const getCostsThisMonth = (date = new Date()) => {
+  date = typeof date == 'object' ? db.dateFormatted(date) : db.dateFormatted(new Date(date));
+  date = new Date(date);
+  return getCostsByDates(getDaysInMonth(date.getMonth(), date.getFullYear()))
+}
+
 const getWeeklyAnalysis = (date) => {
   date = typeof date == 'object' ? db.dateFormatted(date) : db.dateFormatted(new Date(date));
   const weekdates = getWeekdates(date)
@@ -346,6 +392,7 @@ function dateToDate(date, offset){
   return db.dateFormatted(newDate);
 }
 
+
 module.exports = {
   getAnalysis,
   totalCost,
@@ -357,7 +404,10 @@ module.exports = {
   dateToDate,
   getIsFirstTimeEnterApp: db.getIsFirstTimeEnterApp,
   exitNarrativeMode: db.exitNarrativeMode,
-  db
+  db,
+  getCostsThisWeek, getCostsThisMonth,
+  remove: db.remove,
 }
+
 },{"./db":2}]},{},[3])(3)
 });

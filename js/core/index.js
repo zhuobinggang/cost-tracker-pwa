@@ -99,6 +99,28 @@ const totalCost = (costItems) => {
   },0)
 }
 
+const getCostsByDates = (dates) => {
+  const all = dates.map((date) => {
+    return db.readAllCostInDate(date)
+  })
+  return Promise.all(all).then(costsList => {
+    return costsList.reduce((acc ,costs) => {
+      return acc.concat(costs)
+    }, [])
+  })
+}
+
+const getCostsThisWeek = (date) => {
+  date = typeof date == 'object' ? db.dateFormatted(date) : db.dateFormatted(new Date(date));
+  return getCostsByDates(getWeekdates(date))
+}
+
+const getCostsThisMonth = (date = new Date()) => {
+  date = typeof date == 'object' ? db.dateFormatted(date) : db.dateFormatted(new Date(date));
+  date = new Date(date);
+  return getCostsByDates(getDaysInMonth(date.getMonth(), date.getFullYear()))
+}
+
 const getWeeklyAnalysis = (date) => {
   date = typeof date == 'object' ? db.dateFormatted(date) : db.dateFormatted(new Date(date));
   const weekdates = getWeekdates(date)
@@ -129,6 +151,7 @@ function dateToDate(date, offset){
   return db.dateFormatted(newDate);
 }
 
+
 module.exports = {
   getAnalysis,
   totalCost,
@@ -140,5 +163,7 @@ module.exports = {
   dateToDate,
   getIsFirstTimeEnterApp: db.getIsFirstTimeEnterApp,
   exitNarrativeMode: db.exitNarrativeMode,
-  db
+  db,
+  getCostsThisWeek, getCostsThisMonth,
+  remove: db.remove,
 }
