@@ -54,7 +54,14 @@ function rgbStrTorgba(str){
           options: {
             tooltips: {
               enabled: false,
-            }
+            },
+            scales: {
+              yAxes: [{
+                ticks: {
+                  beginAtZero: true
+                }
+              }]
+            },
           }
         }
         if(G.state.chartRefs[canvasId] != null){
@@ -72,7 +79,7 @@ function rgbStrTorgba(str){
               return G.state.chartColors[key]
             }),
           }],
-          labels,
+          labels: labels.length < 1 ? [G.lang.getByKey('nothing')] : labels,
         }
         if(G.state.chartRefs[id] != null){
           console.log('prev pie destroyed')
@@ -121,6 +128,9 @@ function rgbStrTorgba(str){
       },
       setStorage: (key, obj) => {
         localStorage.setItem(key, JSON.stringify(obj));
+      },
+      emptyBox: (text) => {
+        return `<div style="height: 200px; width: 100%; display: flex; justify-content: center; align-items: center;"><div>${text}</div></div>`
       }
     }
 
@@ -198,6 +208,9 @@ function rgbStrTorgba(str){
         }).then(costs => {
           const list = document.getElementById('list__daily-cost')
           list.innerHTML = ''
+          if(costs.length < 1){
+            list.innerHTML = G.fn.emptyBox(G.lang.getByKey('nothing'));
+          }
           costs.forEach((cost, indice) => {
             const li = `
               <ons-list-item expandable>
@@ -471,7 +484,11 @@ function rgbStrTorgba(str){
         const list = document.getElementById('list__preset-types');
         list.innerHTML = ''
         console.log('presets')
-        G.fn.getCustomTypes().forEach((type, index) => {
+        const types = G.fn.getCustomTypes();
+        if(types.length < 1){
+          list.innerHTML = G.fn.emptyBox(G.lang.getByKey('nothing'));
+        }
+        types.forEach((type, index) => {
           const li = `
             <ons-list-item >
               <div class="center">

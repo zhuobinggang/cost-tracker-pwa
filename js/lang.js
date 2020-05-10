@@ -44,6 +44,7 @@ G.lang = (() => {
     mode: ['模式', 'mode', 'モード'],
     narrativeEnteredAlert: ['已进入演示模式，可通过侧边栏退出', 'Entered Narrative Mode, Exit Through Sidebar', 'デモモードに入った、サイドバーを使って普通モードに戻る'],
     manage: ['管理', 'manage', '管理'],
+    nothing: ['什么也没有', 'nothing', '何もいない'],
   }
   const langIndice = {
     zh: 0,
