@@ -201,7 +201,10 @@ function rgbStrTorgba(str){
         core.db.readAllCostInDate(date).then((costs) => {
           const typeCostMap = {};
           costs.forEach((c, i) => {
-            typeCostMap[c.type] = c.cost;
+            if(typeCostMap[c.type] == null){
+              typeCostMap[c.type] = 0;
+            }
+            typeCostMap[c.type] += parseInt(c.cost);
           });
           G.fn.reloadPieChart('chart--pie__day', Object.keys(typeCostMap).map(key => typeCostMap[key]), Object.keys(typeCostMap));
           return costs
