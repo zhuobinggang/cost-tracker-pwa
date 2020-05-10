@@ -11,7 +11,7 @@
     <script src="js/core/bundle.js"></script>
     <style>
       .form--new-cost__input {
-        width: 176px;
+        width: 196px;
       }
       .expandable-content__daily-cost--container{
         display: flex;
@@ -47,6 +47,9 @@
             </ons-list-item>
             <ons-list-item onclick="G.lang.switchLang();document.getElementById('navigator--main').resetToPage();" tappable>
               <span class="i18n" i18n="switchLang"></span>
+            </ons-list-item>
+            <ons-list-item style="background-color: rgb(100, 200, 100);" id="button--exit-narrative-mode" onclick="G.index.fn.exitNarrativeMode();" tappable>
+              <span class="i18n" i18n="exit narrative mode"></span>
             </ons-list-item>
           </ons-list>
         </ons-page>
@@ -106,6 +109,26 @@
         }else if (target.matches('#page__monthly-analysis')){
          console.log('#page__monthly-analysis showed!')
          G.index.monthly_analysis.fn.onShow()
+        }
+      });
+
+      // handle back button
+      window.addEventListener('popstate', function(event) {
+        G.index.fn.back()
+      }, false);
+
+      // 演示模式
+      core.db.getIsFirstTimeEnterApp().then(([flag, fakeGenerated]) => {
+        if(flag && !fakeGenerated){
+          console.log('Generate fake data!');
+          core.db.generateNarrativeModeData(G.lang.randomTypeGenerator, G.lang.randomDetailGenerator).then(() => {
+            G.index.daily_analysis.fn.onShow();
+          })
+          G.fn.alert(G.lang.getByKey('narrativeEnteredAlert'))
+        }else if(flag){
+          G.id('button--exit-narrative-mode').style.display = '';
+        }else{
+          G.id('button--exit-narrative-mode').style.display = 'none';
         }
       });
     </script>

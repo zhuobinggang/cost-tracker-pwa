@@ -1,3 +1,5 @@
+
+
 G.lang = (() => {
   const i18n = {
     today: ['今日', 'today'],
@@ -8,6 +10,7 @@ G.lang = (() => {
     costStastic: ['支出统计', 'cost stastics'],
     monthCost: ['月支出', 'monthly cost'],
     day: ['日', 'day'],
+    date: ['日期', 'date'],
     week: ['周', 'week'],
     month: ['月', 'month'],
     year: ['年', 'year'],
@@ -18,9 +21,28 @@ G.lang = (() => {
     type: ['类型', 'type'],
     food: ['食物', 'food'],
     clothe: ['衣服', 'clothe'],
+    study: ['自我充电', 'study'],
+    paper: ['纸巾', 'toilet paper'],
     entertainment: ['娱乐', 'entertainment'],
     detail: ['详情', 'detail'],
-    switchLang: ['Switch English', '切换中文']
+    switchLang: ['Switch English', '切换中文'],
+    wrong: ['错误的', 'wrong'],
+    no: ['没有', 'no'],
+    next: ['下个', 'next'],
+    alert: ['提示', 'alert'],
+    ok: ['好的', 'OK'],
+    my: ['我的', 'my'],
+    your: ['你的', 'your'],
+    his: ['他的', 'his'],
+    their: ['他们的', 'their'],
+    milk: ['牛奶', 'milk'],
+    stock: ['长筒袜', 'stock'],
+    apple: ['苹果', 'apple'],
+    blue: ['蓝色', 'blue'],
+    exit: ['退出', 'exit'],
+    narrative: ['演示', 'narrative'],
+    mode: ['模式', 'mode'],
+    narrativeEnteredAlert: ['已进入演示模式，可通过侧边栏退出', 'Entered Narrative Mode, Exit Through Sidebar'],
   }
   const langIndice = {
     ch: 0,
@@ -30,13 +52,21 @@ G.lang = (() => {
     return i18n[key][langIndice[lang]];
   }
 
+  function randBetween(min, max) { // min and max included 
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
   //let lang = 'en';
-  let lang = localStorage.getItem('lang') || 'en';
+  let lang = localStorage.getItem('lang') || window.navigator.userLanguage || window.navigator.language || 'en';
 
   function i18nAttrToString(attrVal){
     return attrVal.split(' ').map(key => {
       return getByKey(key)
     }).join(lang=='en'?' ':'');
+  }
+
+  function delim(){
+    return lang == 'en' ? ' ' : '';
   }
 
   return {
@@ -67,6 +97,19 @@ G.lang = (() => {
     switchLang: () => {
       lang = lang == 'en' ? 'ch' : 'en';
       localStorage.setItem('lang', lang);
+    },
+    delim: delim,
+    getByKeys: (keys) => {
+      return keys.split(' ').map(getByKey).join(delim());
+    },
+    randomTypeGenerator: () => {
+      const keys = ['food', 'clothe', 'entertainment', 'study', 'paper']
+      return getByKey(keys[randBetween(0, keys.length - 1)]);
+    },
+    randomDetailGenerator: () => {
+      const first = ['my', 'your', 'his', 'their'];
+      const second = ['milk', 'stock', 'apple', 'blue'];
+      return getByKey(first[randBetween(0, first.length - 1)]) + delim() + getByKey(second[randBetween(0, second.length - 1)]);
     }
   }
 })();

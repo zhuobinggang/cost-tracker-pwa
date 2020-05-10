@@ -198,11 +198,17 @@ const logoutCacheDb = () => {
 function getIsFirstTimeEnterApp(){
   return getStorage().getItem('non-narrative-mode').then(res => {
     return res == null
+  }).then(flag => {
+    return getStorage().getItem('fake-generated').then(res => {
+      return [flag, res=='1']
+    })
   })
 }
 
 function exitNarrativeMode(){
-  return getStorage().setItem('non-narrative-mode', true)
+  return getStorage().setItem('non-narrative-mode', true).then(() => {
+    return getStorage().setItem('fake-generated', true)
+  })
 }
 
 function validatedKeyDate(time){
@@ -235,6 +241,34 @@ function remove(indice, date){
   })
 }
 
+function randBetween(min, max) { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function randomTextGenerator(){
+  const texts = ['fake 1', 'fake 2', 'fake 3'];
+  return texts[randBetween(0, texts.length - 1)];
+}
+
+function generateNarrativeModeData(randomTypeGenerator = randomTextGenerator, randomDetailGenerator = () => 'fake detail'){
+  const date = new Date()
+  const all = [];
+  for(let i = 0; i < 30; i++){
+    for(let j = randBetween(1, 9); j > 0; j--){
+      all.push({
+        type: randomTypeGenerator(),
+        cost: randBetween(30, 500),
+        detail: randomDetailGenerator(),
+        time: dateFormatted(date),
+      });
+    }
+    date.setDate(date.getDate() - 1);
+  }
+  return saveList(all).then(() => {
+    return getLocalStorage().setItem('fake-generated', 1);
+  });
+}
+
 
 module.exports = {
   save,  isTwoCostEqual, dateFormatted, readAllCostInDate,
@@ -243,6 +277,7 @@ module.exports = {
   saveList,logoutCacheDb,getIsFirstTimeEnterApp,exitNarrativeMode,
   setAll,
   remove,
+  generateNarrativeModeData,
 };
 
 },{"./cacheStorage":1}],3:[function(require,module,exports){

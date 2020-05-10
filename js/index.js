@@ -33,6 +33,9 @@ function rgbStrTorgba(str){
       lang: 'ch',
     },
     fn: {
+      alert: (text='') => {
+        ons.notification.alert(text, {title: G.lang.getByKey('alert'), buttonLabels: G.lang.getByKey('ok')});
+      },
       changeToolbarTitle: (title) => {
         document.getElementById('toolbar__title').innerHTML = title;
       },
@@ -142,6 +145,17 @@ function rgbStrTorgba(str){
         document.getElementById('navigator--main').bringPageTop(page);
         document.getElementById('menu').close();
         G.index.fn.switchToolbarBtnByPageName(page);
+        window.history.pushState({}, '', '');
+      },
+      exitNarrativeMode: () => {
+        console.log('++++++')
+        return core.db.emptyAll().then(() => {
+          return core.db.exitNarrativeMode()
+        }).then(() => {
+          localStorage.setItem('fake-generated', 1)
+        }).then(() => {
+          window.location.reload()
+        })
       }
     }
   }
@@ -161,7 +175,11 @@ function rgbStrTorgba(str){
         }
         const ctx = document.getElementById('chart--pie__day');
         core.db.readAllCostInDate(date).then((costs) => {
-          G.fn.reloadPieChart('chart--pie__day', costs.map(it => it.cost), costs.map(it => it.type));
+          const typeCostMap = {};
+          costs.forEach((c, i) => {
+            typeCostMap[c.type] = c.cost;
+          });
+          G.fn.reloadPieChart('chart--pie__day', Object.keys(typeCostMap).map(key => typeCostMap[key]), Object.keys(typeCostMap));
           return costs
         }).then(costs => {
           const list = document.getElementById('list__daily-cost')
@@ -198,6 +216,10 @@ function rgbStrTorgba(str){
         G.index.daily_analysis.fn.onShow()
       },
       nextDay: () => {
+        if(G.index.daily_analysis.state.dateOffset +1 > 0){
+          G.fn.alert(`${G.lang.getByKeys('no next date')}`)
+          return
+        }
         G.index.daily_analysis.state.dateOffset += 1;
         G.index.daily_analysis.fn.onShow()
       }
@@ -229,6 +251,10 @@ function rgbStrTorgba(str){
         G.index.weekly_analysis.fn.onShow()
       },
       nextWeek: () => {
+        if(G.index.weekly_analysis.state.weekOffset +1 > 0){
+          G.fn.alert(`${G.lang.getByKeys('no next week')}`)
+          return
+        }
         G.index.weekly_analysis.state.weekOffset += 1;
         G.index.weekly_analysis.fn.onShow()
       },
@@ -260,20 +286,46 @@ function rgbStrTorgba(str){
       onShow: () => {
         G.fn.changeToolbarTitle(G.lang.getByKey('addNewCost'))
 
+        G.index.daily_analysis.new_cost.fn.refillTimeSelector();
+
+        G.id('input--type__new-cost').setAttribute('placeholder', G.lang.getByKey('type'));
+        G.id('input--cost__new-cost').setAttribute('placeholder', G.lang.getByKey('cost'));
+        G.id('input--detail__new-cost').setAttribute('placeholder', G.lang.getByKey('detail'));
+
         //如果之前为空填充当前时间
-        if(G.id('input--year__new-cost').value || G.id('input--month__new-cost').value || G.id('input--date__new-cost').value){
-          // Do Nothing
-        }else{
-          G.index.daily_analysis.new_cost.fn.resetTime()
-        }
+        G.index.daily_analysis.new_cost.fn.resetTime()
 
         // 检查是否显示清除按钮
         G.index.daily_analysis.new_cost.fn.checkShowClearBtn()
       },
-      resetTime: (date = new Date()) => {
-        G.id('input--year__new-cost').value = date.getFullYear()
-        G.id('input--month__new-cost').value =  date.getMonth() + 1
-        G.id('input--date__new-cost').value =  date.getDate()
+      refillTimeSelector: (date = new Date()) => {
+        // 重新填充时间到select
+        G.id('select--year__new-cost').getElementsByTagName('select')[0].innerHTML = `
+          <option value="${date.getFullYear()}">${date.getFullYear()}</option>
+          <option value="${date.getFullYear() - 1}">${date.getFullYear() - 1}</option>
+          <option value="${date.getFullYear() - 2}">${date.getFullYear() - 2}</option>
+        `;
+        let months = '';
+        for(let i = 1; i<=12 ; i++){
+          months += ` <option value="${i}">${i}</option> `;
+        }
+        G.id('select--month__new-cost').getElementsByTagName('select')[0].innerHTML = months;
+
+        let dates = '';
+        //const maxDate = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        for(let i =1; i<=date.getDate(); i++){
+          dates += ` <option value="${i}">${i}</option> `;
+        }
+        G.id('select--date__new-cost').getElementsByTagName('select')[0].innerHTML = dates;
+      },
+      resetTime: (date) => {
+        if(date == null){
+          date = new Date();
+          date.setDate(date.getDate() + G.index.daily_analysis.state.dateOffset);
+        }
+        G.id('select--year__new-cost').value = date.getFullYear()
+        G.id('select--month__new-cost').value =  date.getMonth() + 1
+        G.id('select--date__new-cost').value =  date.getDate()
       },
       onSelectChange: (event) => {
         const {target} = event
@@ -282,12 +334,20 @@ function rgbStrTorgba(str){
       },
       newCost: () => {
         const type = G.id('input--type__new-cost').value
+        if(type == null || type == ''){
+          G.fn.alert(`${G.lang.getByKey('wrong')}${G.lang.delim()}${G.lang.getByKey('type')}`)
+          return
+        }
         const cost = G.id('input--cost__new-cost').value
+        if(cost == null || cost == '' || isNaN(cost) || cost < 0){
+          G.fn.alert(`${G.lang.getByKey('wrong')}${G.lang.delim()}${G.lang.getByKey('cost')}`)
+          return
+        }
         const detail = G.id('input--detail__new-cost').value
         const time = new Date()
-        G.id('input--year__new-cost').value && time.setFullYear(G.id('input--year__new-cost').value)
-        G.id('input--month__new-cost').value && time.setMonth(parseInt(G.id('input--month__new-cost').value) - 1)
-        G.id('input--date__new-cost').value && time.setDate(G.id('input--date__new-cost').value)
+        G.id('select--year__new-cost').value && time.setFullYear(G.id('select--year__new-cost').value)
+        G.id('select--month__new-cost').value && time.setMonth(parseInt(G.id('select--month__new-cost').value) - 1)
+        G.id('select--date__new-cost').value && time.setDate(G.id('select--date__new-cost').value)
         G.index.daily_analysis.new_cost.fn.resetTime(time)
         return core.db.save({type, cost, detail, time}).then(() => {
           //返回首页并显示新的饼图
@@ -299,6 +359,7 @@ function rgbStrTorgba(str){
       },
       // 检查是否显示清除按钮
       checkShowClearBtn: () => {
+        window.formInputAndSelects = G.index.daily_analysis.new_cost.fn.formInputAndSelects();
         const shouldShowClearBtn = G.index.daily_analysis.new_cost.fn.formInputAndSelects().map(valuable => valuable.value).find(val => val != null && val != '') != null;
         if(shouldShowClearBtn){
           //show clear btn
@@ -310,10 +371,11 @@ function rgbStrTorgba(str){
       formInputAndSelects: () => {
         const prefix = 'input--';
         const suffix = '__new-cost';
-        const inputs = ['type', 'cost', 'detail', 'year', 'month', 'date'].map(modifier => {
+        const inputs = ['type', 'cost', 'detail'].map(modifier => {
           return document.getElementById(`${prefix}${modifier}${suffix}`)
         })
-        return inputs.concat(document.getElementById('select--type__new-cost'))
+        return inputs
+        //return inputs.concat(document.getElementById('select--type__new-cost')).concat(document.getElementById('select--year__new-cost')).concat(document.getElementById('select--month__new-cost')).concat(document.getElementById('select--date__new-cost'))
       },
       clearForm: () => {
         G.index.daily_analysis.new_cost.fn.formInputAndSelects().forEach(el => {
@@ -333,6 +395,10 @@ function rgbStrTorgba(str){
         G.index.monthly_analysis.fn.onShow()
       },
       next: () => {
+        if(G.index.monthly_analysis.state.monthOffset +1 > 0){
+          G.fn.alert(`${G.lang.getByKeys('no next month')}`)
+          return
+        }
         G.index.monthly_analysis.state.monthOffset += 1;
         G.index.monthly_analysis.fn.onShow()
       },
