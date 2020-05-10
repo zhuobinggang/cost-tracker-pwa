@@ -103,16 +103,32 @@ function rgbStrTorgba(str){
           return typeCostList;
         });
       },
-      refreshLang: () => {
-        document.getElementsByClassName();
+      getCustomTypes: () => {
+        let customTypes = localStorage.getItem('custom-types');
+        if(customTypes == null || customTypes == ''){
+          customTypes = [G.lang.getByKey('food'), G.lang.getByKey('entertainment'), G.lang.getByKey('clothe')];
+          localStorage.setItem('custom-types', JSON.stringify(customTypes));
+          console.log('first time get custom types');
+        }else{
+          customTypes = JSON.parse(customTypes);
+        }
+        return customTypes;
       },
+      addToCustomTypes: (item) => {
+        const list = G.fn.getCustomTypes();
+        list.push(item);
+        G.fn.setStorage('custom-types', list);
+      },
+      setStorage: (key, obj) => {
+        localStorage.setItem(key, JSON.stringify(obj));
+      }
     }
 
   };
   G.index = {
     state:{
       level1Pages: ['daily-analysis.html'],
-      level2Pages: ['new-cost.html', 'weekly-analysis.html', 'monthly-analysis.html'],
+      level2Pages: ['new-cost.html', 'weekly-analysis.html', 'monthly-analysis.html', 'preset-type-manage.html'],
     },
     fn: {
       openSplitter: () => {
@@ -152,11 +168,9 @@ function rgbStrTorgba(str){
         return core.db.emptyAll().then(() => {
           return core.db.exitNarrativeMode()
         }).then(() => {
-          localStorage.setItem('fake-generated', 1)
-        }).then(() => {
           window.location.reload()
         })
-      }
+      },
     }
   }
   G.index.daily_analysis = {
@@ -292,6 +306,11 @@ function rgbStrTorgba(str){
         G.id('input--cost__new-cost').setAttribute('placeholder', G.lang.getByKey('cost'));
         G.id('input--detail__new-cost').setAttribute('placeholder', G.lang.getByKey('detail'));
 
+        //自动生成option
+        G.id('select--type__new-cost').getElementsByTagName('select')[0].innerHTML = `<option value="">${G.lang.getByKeys('preset type')}</option> \n` +  G.fn.getCustomTypes().map((type) => {
+          return `<option value="${type}">${type}</option>`
+        }).join('\n');
+
         //如果之前为空填充当前时间
         G.index.daily_analysis.new_cost.fn.resetTime()
 
@@ -312,8 +331,8 @@ function rgbStrTorgba(str){
         G.id('select--month__new-cost').getElementsByTagName('select')[0].innerHTML = months;
 
         let dates = '';
-        //const maxDate = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-        for(let i =1; i<=date.getDate(); i++){
+        const maxDate = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        for(let i =1; i<=maxDate; i++){
           dates += ` <option value="${i}">${i}</option> `;
         }
         G.id('select--date__new-cost').getElementsByTagName('select')[0].innerHTML = dates;
@@ -352,6 +371,14 @@ function rgbStrTorgba(str){
         return core.db.save({type, cost, detail, time}).then(() => {
           //返回首页并显示新的饼图
           G.index.fn.load('daily-analysis.html')
+        }).then(() => {
+          if(G.fn.getCustomTypes().find(it => {
+            return it == type;
+          }) == null){
+            console.log('new type!');
+            G.fn.addToCustomTypes(type);
+          }
+          //如果type不相同，加到manage里面
         })
       },
       onInputChange: ({target}) => {
@@ -435,6 +462,35 @@ function rgbStrTorgba(str){
           G.fn.reloadPieChart('chart--pie__month', values, labels);
         });
       },
+    }
+  }
+  G.index.preset_type_manage = {
+    fn: {
+      onShow: () => {
+        G.fn.changeToolbarTitle(`${G.lang.getByKeys('preset type manage')}`);
+        const list = document.getElementById('list__preset-types');
+        list.innerHTML = ''
+        console.log('presets')
+        G.fn.getCustomTypes().forEach((type, index) => {
+          const li = `
+            <ons-list-item >
+              <div class="center">
+                ${type} 
+              </div>
+              <div class="right">
+                <div class="delete__daily-cost--text" onclick="G.index.preset_type_manage.fn.delete(${index})">${G.lang.getByKey('delete')}</div>
+              </div>
+            </ons-list-item>
+          `;
+          list.appendChild(ons.createElement(li));
+        })
+      },
+      delete: (index) => {
+        const list = G.fn.getCustomTypes();
+        list.splice(index, 1);
+        G.fn.setStorage('custom-types', list);
+        G.index.preset_type_manage.fn.onShow();
+      }
     }
   }
 })();

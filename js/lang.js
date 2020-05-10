@@ -43,6 +43,7 @@ G.lang = (() => {
     narrative: ['演示', 'narrative'],
     mode: ['模式', 'mode'],
     narrativeEnteredAlert: ['已进入演示模式，可通过侧边栏退出', 'Entered Narrative Mode, Exit Through Sidebar'],
+    manage: ['管理', 'manage'],
   }
   const langIndice = {
     ch: 0,
@@ -58,11 +59,14 @@ G.lang = (() => {
 
   //let lang = 'en';
   let lang = localStorage.getItem('lang') || window.navigator.userLanguage || window.navigator.language || 'en';
+  if(lang == null || lang == '' || (lang!='ch' && lang != 'en')){
+    lang = 'en'
+  }
 
   function i18nAttrToString(attrVal){
     return attrVal.split(' ').map(key => {
       return getByKey(key)
-    }).join(lang=='en'?' ':'');
+    }).join(delim());
   }
 
   function delim(){
